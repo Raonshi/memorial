@@ -1,59 +1,73 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:memorial/features/editor/editor_widget.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:memorial/bloc/editor/editor_bloc.dart';
+import 'package:memorial/ui/widget/editor_panel.dart';
+import 'package:memorial/ui/widget/side_panel.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => EditorBloc()..add(const EditorEvent.init()),
+      child: const _HomePageBody(),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
-  late bool _isSidebarOpen;
-
-  @override
-  void initState() {
-    _isSidebarOpen = true;
-    super.initState();
-  }
+class _HomePageBody extends StatelessWidget {
+  const _HomePageBody();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        surfaceTintColor: Colors.white,
-        title: Text("Memorial"),
-      ),
-      body: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(color: Colors.grey.shade300, width: 1.0),
+    return BlocListener<EditorBloc, EditorState>(
+      listener: (context, state) {
+        state.mapOrNull(
+          error: (state) => showDialog(
+            context: context,
+            builder: (context) => AlertDialog.adaptive(
+              content: Text(state.exception.toString()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("OK"),
                 ),
-                margin: const EdgeInsets.only(left: 20.0, bottom: 20.0),
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: List.generate(100, (index) => Text("asdf")),
-                  ),
-                ),
-              ),
+              ],
             ),
-            VerticalDivider(width: 20.0, thickness: 1.0, color: Colors.grey.shade300, indent: 10.0, endIndent: 30.0),
-            const Expanded(
-              flex: 9,
-              child: Padding(
-                padding: EdgeInsets.only(right: 20.0, bottom: 20.0),
-                child: Editor(),
+          ),
+        );
+      },
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              BlocBuilder<EditorBloc, EditorState>(
+                builder: (context, state) {
+                  return Expanded(
+                    flex: 3,
+                    child: SidePanel(
+                      document: state.mapOrNull(loaded: (s) => s.note.document),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
+              Container(
+                width: 1.0,
+                height: MediaQuery.of(context).size.height,
+                margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+                color: Colors.grey.shade300,
+              ),
+              const Expanded(
+                flex: 9,
+                child: EditorPanel(),
+              ),
+            ],
+          ),
         ),
       ),
     );

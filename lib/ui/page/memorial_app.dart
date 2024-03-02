@@ -6,6 +6,10 @@ class MemorialApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(routes: routes);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      routes: routes,
+      initialRoute: '/',
+    );
   }
 }
