@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:memorial/modules/route/routes.dart';
+import 'package:memorial/route/routes.dart';
 
 class MemorialApp extends StatelessWidget {
   const MemorialApp({super.key});
